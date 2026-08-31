@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { ApiError, getPullRequests, type PullRequest } from "@/lib/api-client";
 
@@ -66,11 +67,9 @@ export default function DashboardPage() {
               <div className="px-4 py-6 text-center text-sm text-muted">Este repositorio no tiene PRs abiertos.</div>
             )}
             {pullRequests.map((pr, i) => (
-              <a
+              <Link
                 key={pr.id}
-                href={pr.diff_url?.replace(".diff", "") ?? "#"}
-                target="_blank"
-                rel="noreferrer"
+                href={`/pr/${pr.id}`}
                 className={`grid cursor-pointer grid-cols-[2.5fr_1fr_1fr] items-center border-t border-border px-4 py-3.5 transition-colors hover:bg-card-hover ${i % 2 === 0 ? "bg-card" : ""}`}
               >
                 <div className="flex flex-col gap-0.5 min-w-0">
@@ -81,7 +80,7 @@ export default function DashboardPage() {
                 <span className="font-mono text-xs text-muted-dim">
                   {new Date(pr.created_at).toLocaleDateString("es-AR")}
                 </span>
-              </a>
+              </Link>
             ))}
           </div>
         )}
