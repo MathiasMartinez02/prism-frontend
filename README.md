@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PRISM — Frontend
+
+Dashboard de [PRISM](https://github.com/MathiasMartinez02/prism-backend) (AI Code Reviewer): conectar un repositorio de GitHub, ver sus Pull Requests, y disparar/revisar el análisis de AI sobre cada uno. El backend (FastAPI, la lógica del producto) vive en el repo separado linkeado arriba — este repo es solo la interfaz.
+
+## Problema y solución
+
+Ver el detalle completo en el [README del backend](https://github.com/MathiasMartinez02/prism-backend#problema). En resumen: este frontend es la superficie donde un desarrollador conecta un repo, ve la lista de PRs abiertos, y consulta findings + score de un análisis sin tocar la API directamente.
+
+## Arquitectura
+
+```text
+Next.js 16 (App Router)
+  │
+  ├── app/(dashboard)/page.tsx       lista de PRs (conecta repo, sincroniza)
+  ├── app/(dashboard)/pr/[id]/       detalle: score + findings por severidad
+  ├── lib/api-client.ts              cliente tipado hacia el backend
+  └── design-system/prism/           tokens de color/tipografia/spacing
+              │
+              ▼
+      Backend FastAPI (localhost:8000)
+```
+
+Client components con `fetch` directo al backend (CORS habilitado del lado del backend) — sin capa de estado global todavía, el scope actual no la necesita.
+
+## Features
+
+- Conectar un repo público de GitHub por `owner/repo` y ver sus PRs abiertos.
+- Detalle de PR: dispara el análisis (`POST /pull-requests/{id}/analyze`) y muestra score (anillo de color por umbral) + findings agrupados por severidad.
+- Carga el último análisis guardado al entrar a un PR — no obliga a re-analizar solo para ver un resultado anterior.
+- Manejo de errores visible (repo inexistente, rate limit de GitHub, etc.) con el mensaje real del backend, no un genérico.
+
+## Tech Stack
+
+```text
+Next.js 16 (App Router, Turbopack)
+TypeScript
+Tailwind CSS v4
+next/font (IBM Plex Sans + JetBrains Mono, self-hosted)
+```
 
 ## Getting Started
 
-First, run the development server:
+Necesita el backend corriendo (ver su README) en `http://localhost:8000`, o la variable `NEXT_PUBLIC_API_BASE_URL` apuntando a donde esté.
 
 ```bash
+npm install
+cp .env.example .env
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Docker
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+docker build -t prism-frontend .
+docker run -p 3000:3000 -e NEXT_PUBLIC_API_BASE_URL=http://localhost:8000 prism-frontend
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+O usar el `docker-compose.yml` de la carpeta raíz del proyecto (junto al repo del backend), que levanta ambos servicios con un solo comando.
 
-## Learn More
+## Testing
 
-To learn more about Next.js, take a look at the following resources:
+Sin suite de tests de UI todavía (Playwright/Vitest quedan para cuando el frontend crezca más allá de dos pantallas) — la lógica de negocio real vive en el backend, que sí tiene cobertura. Verificación manual hecha con `npm run build` (compila sin errores de TypeScript) y `npm run lint` en cada cambio.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Design system
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Los tokens (paleta, tipografía, spacing, component specs) están documentados en [`design-system/prism/MASTER.md`](design-system/prism/MASTER.md) — cualquier pantalla nueva debería seguir esas reglas en vez de inventar valores nuevos.
 
-## Deploy on Vercel
+## Demo
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Ver capturas y ejemplo de salida en el [README del backend](https://github.com/MathiasMartinez02/prism-backend#demo).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+
+MIT — ver [LICENSE](LICENSE).
