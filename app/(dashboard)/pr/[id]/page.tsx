@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { ScoreRing } from "@/components/ScoreRing";
 import {
   analyzePullRequest,
   ApiError,
@@ -13,13 +14,6 @@ import {
   type PullRequest,
 } from "@/lib/api-client";
 
-// Umbrales de score y su color, tal como quedaron documentados en design-system/prism/MASTER.md.
-function scoreColor(score: number): string {
-  if (score >= 80) return "var(--accent)";
-  if (score >= 50) return "var(--amber)";
-  return "var(--destructive)";
-}
-
 const SEVERITY_ORDER: FindingSeverity[] = ["high", "medium", "low"];
 const SEVERITY_LABEL: Record<FindingSeverity, string> = { high: "Alta", medium: "Media", low: "Baja" };
 const SEVERITY_COLOR: Record<FindingSeverity, string> = {
@@ -27,34 +21,6 @@ const SEVERITY_COLOR: Record<FindingSeverity, string> = {
   medium: "text-amber border-amber",
   low: "text-muted border-border",
 };
-
-// Anillo de score (SVG), mismo patron visual que el diseño elegido para el dashboard.
-function ScoreRing({ score }: { score: number }) {
-  const radius = 30;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference * (1 - score / 100);
-  const color = scoreColor(score);
-
-  return (
-    <div className="relative flex h-20 w-20 items-center justify-center">
-      <svg width="80" height="80" viewBox="0 0 80 80" className="-rotate-90">
-        <circle cx="40" cy="40" r={radius} fill="none" stroke="var(--border)" strokeWidth="6" />
-        <circle
-          cx="40"
-          cy="40"
-          r={radius}
-          fill="none"
-          stroke={color}
-          strokeWidth="6"
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          strokeLinecap="round"
-        />
-      </svg>
-      <span className="absolute font-mono text-xl font-semibold text-foreground">{score}</span>
-    </div>
-  );
-}
 
 function FindingCard({ finding }: { finding: Finding }) {
   return (
@@ -80,7 +46,7 @@ function FindingCard({ finding }: { finding: Finding }) {
   );
 }
 
-// Pantalla de detalle: dispara el analisis de AI sobre el PR y muestra findings agrupados por severidad + score.
+// Pantalla de detalle: dispara el analisis del PR y muestra score + findings.
 export default function PullRequestDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const [id, setId] = useState<string | null>(null);
   const [pullRequest, setPullRequest] = useState<PullRequest | null>(null);

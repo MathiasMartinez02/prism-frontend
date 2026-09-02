@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-// Tipografia definida en el design canvas (direccion "Terminal Dark"): IBM Plex Sans para UI, JetBrains Mono para datos/codigo.
+// Fuente sans para UI, mono para datos/codigo.
 const plexSans = IBM_Plex_Sans({
   variable: "--font-sans",
   weight: ["400", "500", "600", "700"],

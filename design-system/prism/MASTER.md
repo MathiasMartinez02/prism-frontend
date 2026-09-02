@@ -84,7 +84,9 @@ Definido en el artboard `Main.dc.html` del canvas. Estructura:
 └──────────┴──────────────────────────────────────────┘
 ```
 
-- Sidebar: logo (icono prisma + wordmark mono), nav items (Dashboard/Repositorios/Configuracion), usuario abajo.
+- Sidebar: logo (icono prisma + wordmark mono) + nav items. **Implementado en `components/Sidebar.tsx`** con una desviación deliberada del mockup: solo se lista "Dashboard" como item real (no "Repositorios"/"Configuracion", que no existen todavia) y el pie de sidebar es un link a GitHub en vez de un usuario logueado (no hay auth) — evita prometer navegacion/datos que no son reales.
+- Stat cards: **implementado en `StatCard` dentro de `app/(dashboard)/page.tsx`**, con datos reales de `GET /repositories/{full_name}/stats`.
+- Score inline en la tabla: **implementado con el componente compartido `components/ScoreRing.tsx`** (mismo que usa el detalle de PR, con `size` mas chico para la fila).
 - Score se muestra como anillo SVG (`stroke-dasharray`/`stroke-dashoffset`) coloreado segun semantica de score, con el numero en `font-mono` al lado.
 - Findings se muestran como texto chico por categoria (`1 bug`, `2 perf`, `3 quality`), coloreando solo la categoria mas severa presente.
 - Estados de una fila: `Completado` (check verde), `Ejecutando` (spinner amber), `Sin analizar` (boton outline "Analizar" en accent).

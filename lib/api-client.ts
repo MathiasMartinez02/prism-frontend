@@ -1,6 +1,18 @@
 // Cliente HTTP tipado hacia el backend de PRISM.
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
 
+export type AnalysisStatus = "pending" | "running" | "completed" | "failed";
+
+// Resumen del ultimo analisis de un PR, embebido en la lista.
+export interface LatestAnalysisSummary {
+  id: string;
+  status: AnalysisStatus;
+  overall_score: number | null;
+  findings_count: number;
+  high_severity_count: number;
+  category_counts: Record<FindingCategory, number>;
+}
+
 export interface PullRequest {
   id: string;
   github_pr_number: number;
@@ -8,6 +20,14 @@ export interface PullRequest {
   author: string | null;
   diff_url: string | null;
   created_at: string;
+  latest_analysis: LatestAnalysisSummary | null;
+}
+
+export interface RepositoryStats {
+  total_analyzed: number;
+  average_score: number | null;
+  critical_findings: number;
+  ai_provider: string;
 }
 
 export type FindingCategory = "bug" | "security" | "performance" | "quality" | "tests";
@@ -23,8 +43,6 @@ export interface Finding {
   recommendation: string | null;
 }
 
-export type AnalysisStatus = "pending" | "running" | "completed" | "failed";
-
 export interface Analysis {
   id: string;
   status: AnalysisStatus;
@@ -35,7 +53,7 @@ export interface Analysis {
   findings: Finding[];
 }
 
-// Error tipado para poder mostrar el mensaje real del backend (repo no encontrado, rate limit, etc).
+// Error tipado con el mensaje real del backend.
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -80,5 +98,11 @@ export async function analyzePullRequest(id: string): Promise<Analysis> {
 // Historial de analisis previos de un PR, mas recientes primero.
 export async function getAnalyses(pullRequestId: string): Promise<Analysis[]> {
   const res = await fetch(`${API_BASE_URL}/pull-requests/${pullRequestId}/analyses`);
+  return handleResponse(res);
+}
+
+// Stats agregadas de un repo ya sincronizado (para las stat cards del dashboard).
+export async function getRepositoryStats(fullName: string): Promise<RepositoryStats> {
+  const res = await fetch(`${API_BASE_URL}/repositories/${fullName}/stats`);
   return handleResponse(res);
 }
